@@ -3,20 +3,80 @@ import sqlite3
 # ==================================================
 # Section 1 – Summaries
 # ==================================================
+conn = sqlite3.connect("food_delivery.db")
 
 def total_customers(conn):
+
+    query = '''
+    SELECT COUNT(customer_id)
+    FROM customers
+
+    '''
+    cursor = conn.execute(query)
+    results = cursor.fetchone() 
+
+    print(f"There are {results[0]} customers")
     pass
 
 
 def customer_signup_range(conn):
+    
+    query ='''
+    SELECT MIN(signup_date), MAX(signup_date)
+    FROM customers;
+
+    '''
+    cursor = conn.execute(query)
+    results= cursor.fetchone()
+
+    earliest = results[0]
+    latest = results[1]
+
+    print(f"The earliest customer sign up date was {earliest}\n"
+          f"The latest customer sign up date was {latest}")
     pass
 
 
 def order_summary_stats(conn):
+
+    query ='''
+    SELECT COUNT(order_id), AVG(order_total), MIN(order_total), Max(order_total)
+    FROM orders;
+
+    '''
+    cursor = conn.execute(query)
+    total_orders, avg_order, min_order, max_order = cursor.fetchone()
+
+    print(f"Total orders: {total_orders}\n"
+          f"Average order price: {avg_order}\n"
+          f"Lowest order total: {min_order}\n"
+          f"Highest order total: {max_order}")
     pass
 
 
 def driver_summary(conn):
+
+    count_query = '''
+    SELECT COUNT(driver_id)
+    FROM drivers
+    
+    '''
+    cursor = conn.execute(count_query)
+    total_drivers = cursor.fetchone()
+    
+    hire_dates_query = '''
+    SELECT hire_date
+    FROM drivers
+
+    '''
+    cursor = conn.execute(hire_dates_query)
+    results = cursor.fetchall()
+
+    print(f"Total drivers: {total_drivers[0]}")
+    print("Hire dates:")
+    
+    for hire_date in results:
+        print(f"- {hire_date[0]}")
     pass
 
 

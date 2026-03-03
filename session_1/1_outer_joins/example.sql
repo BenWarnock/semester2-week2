@@ -10,8 +10,8 @@
 
 -- write your sql code here
 
-SELECT Students.name AS students, Department.name AS department 
+SELECT Students.name AS Students, Department.name AS department 
 FROM 
-Students JOIN Department 
+Students LEFT JOIN Department 
 ON Students.department_id = Department.id
 ORDER BY department;

@@ -37,14 +37,13 @@ def search_for_student(db):
         query = '''
                 SELECT s.department_id, s.name, d.name
                 FROM Students s JOIN Department d
-                ON s.id=d.id
+                ON s.department_id=d.id
                 WHERE s.id=?
                 '''
     except:
         query = '''
                 SELECT s.id, s.name, d.name
-                FROM Students s JOIN Department d
-                ON s.department_id=d.id
+                FROM Students s JOIN Department d ON s.department_id=d.id
                 WHERE s.name=?
                 '''
         
@@ -81,9 +80,10 @@ def view_courses(db):
     :param db: db object to query
     '''
     query = '''
-            SELECT c.id, c.name, c.semester, d.name FROM
-            Courses c LEFT JOIN Department d
-            ON c.id=d.id;
+            SELECT c.id, c.name, c.semester, d.name 
+            FROM
+            Courses c LEFT JOIN Department d ON c.department_id=d.id
+            ORDER BY c.name;
             '''
     cursor = db.execute(query)
     for each in cursor:
@@ -98,10 +98,9 @@ def view_student_by_course(db):
         except:
             choice=-1
     query = '''
-            SELECT s.name from
-            StudentCourses sc 
-            JOIN Students s ON
-            student_id=s.id
+            SELECT s.name 
+            FROM
+            StudentCourses sc JOIN Students s ON sc.student_id=s.id
             WHERE sc.course_id=?;
             '''
     cursor = db.execute(query, (choice,))
@@ -115,7 +114,16 @@ def review_student_numbers(db):
     Print the number of students registered for each course.    
     :param db: Database object to query
     '''
-    pass
+    query = '''
+            SELECT c.name AS CourseName, COUNT(sc.student_id) AS TotalStudents 
+            FROM Courses c LEFT JOIN StudentCourses sc ON c.id = sc.course_id
+            GROUP BY c.name, c.id
+            ORDER BY c.name;
+            '''
+    cursor = db.execute(query)
+    results = cursor.fetchall() 
+    for course, total in results:
+        print(f"{course}: {total} students")
 
 def main():
 

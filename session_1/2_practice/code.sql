@@ -2,10 +2,13 @@
 .mode columns
 .headers on
 
--- Instructions for students:
--- 1. Open SQLite in terminal: sqlite3 library.db
--- 2. Load this script: .read code.sql
--- 3. Exit SQLite: .exit
 
-
--- write your sql code here
+SELECT Books.title , Members.name, Loans.loan_date,
+CASE 
+    WHEN Loans.id IS NULL THEN 'Unloaned Book'
+    ELSE 'Loaned Book'
+END AS Book_status
+From Books 
+LEFT JOIN Loans ON Books.id = Loans.book_id
+LEFT JOIN MEMBERS ON Loans.member_id = Members.id
+ORDER BY Books.title;
