@@ -31,8 +31,14 @@ def customer_tickets(conn, customer_id):
     cursor = conn.execute(query, (customer_id,))
     results = cursor.fetchall()
 
+    print("-" *55)
+    print(f"{'Film Title':<20} | {'Screen':<12} | {'Price':<12}")
+    print("-" *55)
+    for title, screen, price in results:
+        print(f"{title:<20} | {screen:<12} | {price:<12.2f}")
+    print("-" *55)
     pass
-    return results
+
 
 def screening_sales(conn):
     """
@@ -53,9 +59,13 @@ def screening_sales(conn):
     cursor = conn.execute(query)
     results = cursor.fetchall()
 
+    print("-" * 55)
+    print(f"{'Screening ID':<12} | {'Film Title':<20} | {'Tickets Sold':<12}")
+    print("-" * 55)
+    for screening_id, title, tickets_sold in results:
+        print(f"{screening_id:<12} | {title:<20} | {tickets_sold:<12}")
+    print("-" * 55)
     pass
-    return results
-    
 
 
 def top_customers_by_spend(conn, limit):
@@ -80,5 +90,10 @@ def top_customers_by_spend(conn, limit):
     cursor = conn.execute(query, (limit,))
     results = cursor.fetchall()
 
+    print("-" * 40)
+    print(f"{'Customer Name':<20} | {'Total Spent':<12}")
+    print("-" * 40)
+    for customer_name, total_spent in results:
+        print(f"{customer_name:<20} | {total_spent:<12.2f}")
+    print("-" * 40)
     pass
-    return results
