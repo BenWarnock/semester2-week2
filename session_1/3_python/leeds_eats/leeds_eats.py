@@ -1,4 +1,6 @@
 import sqlite3
+from collections import Counter
+from datetime import datetime
 
 # ==================================================
 # Section 1 – Summaries
@@ -85,14 +87,69 @@ def driver_summary(conn):
 # ==================================================
 
 def orders_per_customer(conn):
+
+    query = '''
+    SELECT customer_name, 
+    COUNT(order_id) AS TotalOrders, 
+    SUM(order_total) AS TotalSpent
+    FROM customers c JOIN orders o ON c.customer_id = o.customer_id
+    GROUP BY customer_name
+    ORDER BY customer_name;
+'''
+    cursor = conn.execute(query)
+    results = cursor.fetchall()
+
+    print(f"{'Customer Name':<30} | {'Total Orders':<12} | {'Total Spent':<12}")
+    
+    print("-" * 75)  # Print a separator line for readability
+    for customer_name, TotalOrders, TotalSpent in results:
+        print(f"{customer_name:<30} | {TotalOrders:<12} | {TotalSpent:<12.2f}")
     pass
 
 
 def driver_workload(conn):
+
+    query = '''
+    SELECT driver_name, COUNT(delivery_id) AS deliveries_completed
+    FROM drivers d JOIN deliveries de ON d.driver_id = de.driver_id
+    GROUP by driver_name
+    ORDER by driver_name;
+'''
+    cursor = conn.execute(query)
+    results = cursor.fetchall()
+
+    print(f" {'Driver Name':<30} | {'Deliveries Completed':<12}")
+    for driver_name, total_deliveries in results:
+        print(f"{driver_name:<30} | {total_deliveries:<12}")
     pass
 
 
 def delivery_lookup_by_id(conn, order_id):
+
+    try:
+        order_id= int(order_id)
+        query = '''
+        SELECT o.order_id, c.customer_name, o.order_total, de.delivery_date, d.driver_name
+        FROM customers c 
+        JOIN orders o ON c.customer_id = o.customer_id
+        JOIN deliveries de ON o.order_id = de.order_id
+        JOIN drivers d ON de.driver_id = d.driver_id
+        WHERE o.order_id=?;
+        '''
+        cursor = conn.execute(query,(order_id,))
+        result= cursor.fetchone()
+
+        if result:
+            print(f"\nOrder ID : {result[0]}")
+            print(f"Customer Name : {result[1]}")
+            print(f"Order Total : {result[2]:.2f}")
+            print(f"Delivery  Date : {result[3]}")
+            print(f"Driver : {result[4]}")
+        else:
+            print(f"Order {order_id} not found")
+    except ValueError:
+        print("Invalid input")
+        
     pass
 
 
@@ -101,14 +158,70 @@ def delivery_lookup_by_id(conn, order_id):
 # ==================================================
 
 def orders_per_date(conn):
+
+    query = '''
+    SELECT COUNT(order_id) ,order_date
+    FROM orders
+    GROUP BY order_date
+    ORDER BY order_date;
+    '''
+    cursor = conn.execute(query)
+    result = cursor.fetchall()
+
+    print(f"{'Order Date':<12} | {'Total Orders':<12}")
+    print("-" * 35)
+    
+    for row in result:
+        print(f"{row[1]:<12} | {row[0]:<12}")
     pass
 
 
 def deliveries_per_date(conn):
+    
+    query = '''
+    SELECT delivery_date, COUNT(delivery_id)
+    FROM deliveries
+    GROUP BY delivery_date
+    ORDER BY delivery_date;
+
+'''
+    cursor = conn.execute(query)
+    result = cursor.fetchall()
+
+    print(f"{'Delivery Date':<12} | {'Total Deliveries':<12}")
+    print("-" * 35)
+    
+    for row in result:
+        print(f"{row[0]:<12} | {row[1]:<12}")
     pass
 
 
+
 def customer_signups_per_month(conn):
+
+    query = '''
+    Select signup_date
+    FROM customers;
+
+'''
+
+    cursor = conn.execute(query)
+    results = cursor.fetchall()
+    
+    signup_dates = [row[0] for row in results]
+
+    months = []
+    for signup_date in signup_dates:
+        month_year = signup_date[:7]
+        months.append(month_year)
+
+    month_counts = Counter(months)
+
+    print(f"{'Month':<10} | {'Signups Count'}")
+    print("-" * 30)
+    for month, count in sorted(month_counts.items()):
+        print(f"{month:<10} | {count:<15}")
+        
     pass
 
 
@@ -117,14 +230,71 @@ def customer_signups_per_month(conn):
 # ==================================================
 
 def top_customers_by_spend(conn, limit=5):
+
+    query = '''
+    SELECT customer_name, SUM(order_total) AS TotalSpent
+    FROM customers c JOIN orders o ON c.customer_id = o.customer_id
+    GROUP BY customer_name
+    ORDER BY TotalSpent DESC
+    LIMIT  ?;
+
+    '''
+    cursor = conn.execute(query, (limit,))
+    results = cursor.fetchall()
+
+    print(f"{'Customer Name':<30} | {'Total Spent':<12}")
+    print("-" * 50)  
+
+    for customer, total_spent in results:
+        print(f"{customer:<30} {total_spent:<12.2f}")
     pass
 
 
 def rank_drivers_by_deliveries(conn):
+
+    query = '''
+    SELECT d.driver_name, d.driver_id, COUNT(delivery_id) AS completed_deliveries
+    FROM drivers d JOIN deliveries de ON d.driver_id = de.driver_id
+    GROUP BY d.driver_id, d.driver_name
+    ORDER BY completed_deliveries DESC
+'''
+    cursor = conn.execute(query)
+    results = cursor.fetchall()
+    
+    print(f"{'Driver Name':<30} | {'Driver ID':<12} | {'Total Deliveries':<12}")
+    print("-" * 75) 
+
+    for driver_name, driver_id, total_deliveries in results:
+        print(f"{driver_name:<30} | {driver_id:<12} | {total_deliveries:<12}")
     pass
 
 
 def high_value_orders(conn, threshold):
+    
+    try:
+        threshold= float(threshold)
+        
+        query = '''
+        SELECT order_id, order_total
+        FROM orders
+        WHERE order_total > ?
+
+        '''
+
+        
+        cursor = conn.execute(query,(threshold,))
+        results= cursor.fetcall()
+
+        if results:
+            print(f"orders above ${threshold}")
+            for order_id, order_total in results:
+                print(f" Order ID: {order_id}, Total: {order_total}")
+            else:
+                print("No orders above that value")
+
+    except ValueError:
+        print(f"Invalid Value")
+
     pass
 
 
