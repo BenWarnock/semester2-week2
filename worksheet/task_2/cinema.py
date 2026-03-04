@@ -1,3 +1,9 @@
+
+""" Your name: Ben Warnock
+Your student ID: 201852300
+You state that the code submitted is wholly written by yourself. 
+Date: 22/02/2026 """
+
 """
 This is where you should write your code and this is what you need to upload to Gradescope for autograding.
 
